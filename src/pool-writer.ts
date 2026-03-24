@@ -133,21 +133,33 @@ export async function writeMemories(
   let written = 0;
   const errors: string[] = [];
 
-  // Simple concurrency limiter
-  const queue = [...memories];
-  const workers = Array.from({ length: concurrency }, async () => {
-    while (queue.length > 0) {
-      const mem = queue.shift();
-      if (!mem) break;
+  // Serialize writes with delay to avoid rate limits
+  for (const mem of memories) {
+    let attempts = 0;
+    let success = false;
+    while (attempts < 5 && !success) {
       const result = await writeMemory(mem, poolId, opts);
       if (result.ok) {
         written++;
+        success = true;
+      } else if (result.error?.includes("429")) {
+        // Extract retryAfter from error or default to 60s
+        const match = result.error.match(/"retryAfter":(\d+)/);
+        const waitMs = match ? (parseInt(match[1]) + 2) * 1000 : 62000;
+        console.log(`   ⏳ Rate limited, waiting ${Math.ceil(waitMs/1000)}s...`);
+        await new Promise(r => setTimeout(r, waitMs));
+        attempts++;
       } else {
         errors.push(`${mem.dedupeKey}: ${result.error}`);
+        success = true; // don't retry non-429 errors
       }
     }
-  });
+    if (!success) {
+      errors.push(`${mem.dedupeKey}: max retries exceeded`);
+    }
+    // Small delay between writes
+    await new Promise(r => setTimeout(r, 350));
+  }
 
-  await Promise.all(workers);
   return { written, errors };
 }

@@ -178,7 +178,7 @@ export async function recallMemories(
   limit: number = 10,
 ): Promise<any[]> {
   try {
-    const res = await fetch(`${opts.engramUrl}/v1/memories/recall`, {
+    const res = await fetch(`${opts.engramUrl}/v1/recall`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

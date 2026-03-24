@@ -200,6 +200,48 @@ function generateSearchTermContent(record: NormalizedRecord): string {
   return parts.join(" ");
 }
 
+function generateSearchQueryContent(record: NormalizedRecord): string {
+  const p = record.parsed;
+  const query = p.searchQuery || "Unknown";
+
+  const parts = [
+    `${record.clientId} search query: "${query}".`,
+    `Period: ${record.dateStart} to ${record.dateEnd}.`,
+  ];
+
+  if (p.clicks != null) parts.push(`${fmtNum(p.clicks as number)} clicks.`);
+  if (p.cost != null) parts.push(`Spend: ${fmtCurrency(p.cost as number)}.`);
+  if (p.impressions != null) parts.push(`${fmtNum(p.impressions as number)} impressions.`);
+  if (p.conversions != null) parts.push(`${fmtNum(p.conversions as number)} conversions.`);
+
+  return parts.join(" ");
+}
+
+function generatePeriodComparisonContent(record: NormalizedRecord): string {
+  const p = record.parsed;
+  const campaign = p.campaignName || "Unknown";
+
+  const parts = [
+    `${record.clientId} period comparison for campaign "${campaign}".`,
+    `Period: ${record.dateStart} to ${record.dateEnd}.`,
+  ];
+
+  if (p.cost != null) parts.push(`Current spend: ${fmtCurrency(p.cost as number)}.`);
+  if (p.costComparison != null) parts.push(`Previous spend: ${fmtCurrency(p.costComparison as number)}.`);
+  if (p.clicks != null) parts.push(`Current clicks: ${fmtNum(p.clicks as number)}.`);
+  if (p.clicksComparison != null) parts.push(`Previous clicks: ${fmtNum(p.clicksComparison as number)}.`);
+  if (p.interactions != null) parts.push(`Current interactions: ${fmtNum(p.interactions as number)}.`);
+  if (p.interactionsComparison != null) parts.push(`Previous interactions: ${fmtNum(p.interactionsComparison as number)}.`);
+
+  // Compute change direction
+  if (typeof p.cost === "number" && typeof p.costComparison === "number" && p.costComparison > 0) {
+    const change = ((p.cost - p.costComparison) / p.costComparison) * 100;
+    parts.push(`Spend change: ${change > 0 ? "+" : ""}${change.toFixed(0)}%.`);
+  }
+
+  return parts.join(" ");
+}
+
 function generateGenericContent(record: NormalizedRecord): string {
   const p = record.parsed;
   const parts = [
@@ -226,6 +268,8 @@ function generateContent(record: NormalizedRecord): string {
     case "keyword": return generateKeywordContent(record);
     case "network": return generateNetworkContent(record);
     case "search-term": return generateSearchTermContent(record);
+    case "search-query": return generateSearchQueryContent(record);
+    case "period-comparison": return generatePeriodComparisonContent(record);
     default: return generateGenericContent(record);
   }
 }
@@ -353,6 +397,7 @@ function buildDedupeKey(record: NormalizedRecord): string {
     p.keyword || "",
     p.network || "",
     p.searchWord || "",
+    p.searchQuery || "",
     p.advertiserName || "",
   ].join(":");
 

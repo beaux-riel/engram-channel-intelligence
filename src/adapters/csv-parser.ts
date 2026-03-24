@@ -90,10 +90,12 @@ export function parseGoogleAdsCSV(content: string): ParsedCSV {
 function detectTitleFromHeaders(headerLine: string): string {
   const h = headerLine.toLowerCase();
   if (h.includes("search keyword")) return "Search keywords";
+  if (h.startsWith("search,")) return "Searches search";
+  if (h.includes("word") && h.includes("top containing")) return "Searches word";
   if (h.includes("network")) return "Networks";
   if (h.includes("advertiser name")) return "Auction insights";
-  if (h.includes("word") && h.includes("top containing")) return "Searches word";
-  if (h.includes("device")) return "Device performance";
+  if (h.startsWith("device,")) return "Device performance";
+  if (h.includes("campaign name") && h.includes("comparison")) return "Biggest changes";
   if (h.includes("audience segment")) return "Audience performance";
   if (h.includes("hour of day")) return "Hourly performance";
   if (h.includes("day of week")) return "Day of week performance";
@@ -138,12 +140,14 @@ export function parseStr(val: string): string | null {
 export function detectReportType(title: string): string {
   const t = title.toLowerCase();
   if (t.includes("search keyword") || t.includes("search keywords")) return "keyword";
+  if (t.includes("searches search")) return "search-query";
   if (t.includes("searches word") || t.includes("search word")) return "search-term";
+  if (t.includes("biggest change")) return "period-comparison";
   if (t.includes("network")) return "network";
   if (t.includes("auction")) return "competitor";
   if (t.includes("ad group")) return "ad-group";
-  if (t.includes("campaign")) return "campaign";
   if (t.includes("device")) return "device";
+  if (t.includes("campaign")) return "campaign";
   if (t.includes("audience") || t.includes("demographic")) return "audience";
   if (t.includes("hour")) return "hourly";
   if (t.includes("day of week") || t.includes("day-of-week")) return "dow";

@@ -62,7 +62,15 @@ const COLUMN_MAP: Record<string, string> = {
   "Campaign Status": "campaignState",
   "Ad Group Status": "adGroupState",
   "Word": "searchWord",
+  "Search": "searchQuery",
   "Top Containing Queries": "topQueries",
+
+  // Period Comparison (Biggest Changes)
+  "Campaign Name": "campaignName",
+  "Cost (Comparison)": "costComparison",
+  "Clicks (Comparison)": "clicksComparison",
+  "Interactions": "interactions",
+  "Interactions (Comparison)": "interactionsComparison",
 
   // Networks
   "Network": "network",
@@ -90,7 +98,7 @@ const COLUMN_MAP: Record<string, string> = {
 };
 
 // Fields that should be parsed as currency
-const CURRENCY_FIELDS = new Set(["cost", "cpc", "costPerConversion", "budget"]);
+const CURRENCY_FIELDS = new Set(["cost", "cpc", "costPerConversion", "budget", "costComparison"]);
 
 // Fields that should be parsed as percentages
 const PCT_FIELDS = new Set([
@@ -105,6 +113,7 @@ const PCT_FIELDS = new Set([
 const NUM_FIELDS = new Set([
   "impressions", "clicks", "conversions", "viewThroughConv",
   "hourOfDay", "activeAds", "disapprovedAds", "activeKeywords", "disapprovedKeywords",
+  "clicksComparison", "interactions", "interactionsComparison",
 ]);
 
 function normalizeRow(
@@ -132,12 +141,8 @@ function normalizeRow(
 }
 
 function hasActivity(parsed: Record<string, number | string | boolean | null>, recordType: string): boolean {
-  // Competitor/auction insight records are always relevant
-  if (recordType === "competitor") return true;
-  // Network records are always relevant if they have a network name
-  if (recordType === "network") return true;
-  // Search term records always relevant
-  if (recordType === "search-term") return true;
+  // These record types are always relevant
+  if (["competitor", "network", "search-term", "search-query", "period-comparison"].includes(recordType)) return true;
 
   const clicks = parsed.clicks as number | null;
   const impressions = parsed.impressions as number | null;

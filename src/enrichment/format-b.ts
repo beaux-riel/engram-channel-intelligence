@@ -132,7 +132,7 @@ function generateCompetitorContent(record: NormalizedRecord): string {
 
 function generateHourlyContent(record: NormalizedRecord): string {
   const p = record.parsed;
-  const hour = p.hourOfDay ?? "Unknown";
+  const hour = p.startHour || p.hourOfDay || "Unknown";
 
   const parts = [
     `${record.clientId} hourly performance: Hour ${hour}.`,
@@ -221,6 +221,54 @@ function generateDemographicContent(record: NormalizedRecord): string {
   return parts.join(" ");
 }
 
+function generateDayOfWeekContent(record: NormalizedRecord): string {
+  const p = record.parsed;
+  const day = p.dayOfWeek || "Unknown";
+
+  const parts = [
+    `${record.clientId} day-of-week performance: ${day}.`,
+    `Period: ${record.dateStart} to ${record.dateEnd}.`,
+  ];
+
+  if (p.impressions != null) parts.push(`${fmtNum(p.impressions as number)} impressions.`);
+  if (p.clicks != null) parts.push(`${fmtNum(p.clicks as number)} clicks.`);
+  if (p.cost != null) parts.push(`Spend: ${fmtCurrency(p.cost as number)}.`);
+  if (p.conversions != null) parts.push(`${fmtNum(p.conversions as number)} conversions.`);
+
+  return parts.join(" ");
+}
+
+function generateDayHourContent(record: NormalizedRecord): string {
+  const p = record.parsed;
+  const day = p.dayOfWeek || "Unknown";
+  const hour = p.startHour || "Unknown";
+
+  const parts = [
+    `${record.clientId} day+hour performance: ${day} ${hour}.`,
+    `Period: ${record.dateStart} to ${record.dateEnd}.`,
+  ];
+
+  if (p.impressions != null) parts.push(`${fmtNum(p.impressions as number)} impressions.`);
+
+  return parts.join(" ");
+}
+
+function generateTimeSeriesContent(record: NormalizedRecord): string {
+  const p = record.parsed;
+  const date = p.date || "Unknown";
+
+  const parts = [
+    `${record.clientId} daily performance: ${date}.`,
+  ];
+
+  if (p.clicks != null) parts.push(`${fmtNum(p.clicks as number)} clicks.`);
+  if (p.cost != null) parts.push(`Spend: ${fmtCurrency(p.cost as number)}.`);
+  if (p.convValue != null) parts.push(`Conv value: ${fmtCurrency(p.convValue as number)}.`);
+  if (p.roas != null && (p.roas as number) > 0) parts.push(`ROAS: ${(p.roas as number).toFixed(2)}.`);
+
+  return parts.join(" ");
+}
+
 function generateSearchQueryContent(record: NormalizedRecord): string {
   const p = record.parsed;
   const query = p.searchQuery || "Unknown";
@@ -293,6 +341,11 @@ function generateContent(record: NormalizedRecord): string {
     case "period-comparison": return generatePeriodComparisonContent(record);
     case "audience-gender": return generateDemographicContent(record);
     case "audience-gender-age": return generateDemographicContent(record);
+    case "audience-age": return generateDemographicContent(record);
+    case "dow": return generateDayOfWeekContent(record);
+    case "day-hour": return generateDayHourContent(record);
+    case "hourly": return generateHourlyContent(record);
+    case "time-series": return generateTimeSeriesContent(record);
     default: return generateGenericContent(record);
   }
 }

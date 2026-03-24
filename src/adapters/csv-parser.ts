@@ -97,6 +97,13 @@ function detectTitleFromHeaders(headerLine: string): string {
   if (h.startsWith("device,")) return "Device performance";
   if (h.startsWith("gender,age")) return "Demographics gender age";
   if (h.startsWith("gender,")) return "Demographics gender";
+  if (h.startsWith("age range,")) return "Demographics age";
+  if (h.startsWith("start hour,")) return "Hourly performance";
+  if (h.startsWith("day,start hour,")) return "Day hour performance";
+  if (h.startsWith("day,impressions") || h.startsWith("day,impr")) return "Day performance";
+  if (h.startsWith("date,")) return "Time series";
+  if (h.startsWith("campaign name,campaign group")) return "Campaigns";
+  if (h.startsWith("optimization")) return "Optimization score";
   if (h.includes("campaign name") && h.includes("comparison")) return "Biggest changes";
   if (h.includes("audience segment")) return "Audience performance";
   if (h.includes("hour of day")) return "Hourly performance";
@@ -146,6 +153,12 @@ export function detectReportType(title: string): string {
   if (t.includes("searches word") || t.includes("search word")) return "search-term";
   if (t.includes("demographics gender age")) return "audience-gender-age";
   if (t.includes("demographics gender")) return "audience-gender";
+  if (t.includes("demographics age")) return "audience-age";
+  if (t.includes("day hour")) return "day-hour";
+  if (t.includes("day performance")) return "dow";
+  if (t.includes("time series")) return "time-series";
+  if (t.includes("campaigns")) return "campaign";
+  if (t.includes("optimization")) return "optimization";
   if (t.includes("biggest change")) return "period-comparison";
   if (t.includes("network")) return "network";
   if (t.includes("auction")) return "competitor";

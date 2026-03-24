@@ -70,6 +70,18 @@ const COLUMN_MAP: Record<string, string> = {
   "Age Range": "ageRange",
   "Percent of known total": "pctOfTotal",
 
+  // Day/Hour
+  "Start Hour": "startHour",
+  "Day": "dayOfWeek",
+
+  // Time Series
+  "Date": "date",
+  "Conv. value": "convValue",
+  "Conv. value / cost": "roas",
+
+  // Campaigns
+  "Campaign Group Name": "campaignGroup",
+
   // Period Comparison (Biggest Changes)
   "Campaign Name": "campaignName",
   "Cost (Comparison)": "costComparison",
@@ -103,7 +115,7 @@ const COLUMN_MAP: Record<string, string> = {
 };
 
 // Fields that should be parsed as currency
-const CURRENCY_FIELDS = new Set(["cost", "cpc", "costPerConversion", "budget", "costComparison"]);
+const CURRENCY_FIELDS = new Set(["cost", "cpc", "costPerConversion", "budget", "costComparison", "convValue"]);
 
 // Fields that should be parsed as percentages
 const PCT_FIELDS = new Set([
@@ -119,6 +131,7 @@ const NUM_FIELDS = new Set([
   "impressions", "clicks", "conversions", "viewThroughConv",
   "hourOfDay", "activeAds", "disapprovedAds", "activeKeywords", "disapprovedKeywords",
   "clicksComparison", "interactions", "interactionsComparison",
+  "roas",
 ]);
 
 function normalizeRow(
@@ -147,7 +160,9 @@ function normalizeRow(
 
 function hasActivity(parsed: Record<string, number | string | boolean | null>, recordType: string): boolean {
   // These record types are always relevant
-  if (["competitor", "network", "search-term", "search-query", "period-comparison", "audience-gender", "audience-gender-age"].includes(recordType)) return true;
+  if (["competitor", "network", "search-term", "search-query", "period-comparison",
+       "audience-gender", "audience-gender-age", "audience-age",
+       "hourly", "dow", "day-hour", "time-series", "campaign", "optimization"].includes(recordType)) return true;
 
   const clicks = parsed.clicks as number | null;
   const impressions = parsed.impressions as number | null;
